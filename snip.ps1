@@ -24,9 +24,10 @@ Write-Host "   [11] JS - Factorial"
 Write-Host ""
 Write-Host "   [12] PHP - All Loops"
 Write-Host "   [13] JS - All Loops"
+Write-Host "   [14] PHP - Student Form (Insert + Display)"
 Write-Host ""
 
-$choice = Read-Host "  Enter choice (1-13)"
+$choice = Read-Host "  Enter choice (1-14)"
 
 switch ($choice) {
 
@@ -263,6 +264,57 @@ for (let key in obj) {
 "@
 }
 
+"14" {
+$code = @"
+<?php
+$conn = new mysqli("localhost", "root", "", "college_db");
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name  = $_POST['name'];
+    $email = $_POST['email'];
+    $marks = $_POST['marks'];
+
+    if (!empty($name) && !empty($email) && is_numeric($marks)) {
+        $stmt = $conn->prepare("INSERT INTO students (name, email, marks) VALUES (?, ?, ?)");
+        $stmt->bind_param("ssi", $name, $email, $marks);
+        $stmt->execute();
+        $stmt->close();
+        echo "Inserted successfully<br>";
+    }
+}
+
+$result = $conn->query("SELECT * FROM students ORDER BY id DESC");
+?>
+
+<form method="POST">
+    <input type="text" name="name" placeholder="Name"><br>
+    <input type="email" name="email" placeholder="Email"><br>
+    <input type="number" name="marks" placeholder="Marks"><br>
+    <button type="submit">Submit</button>
+</form>
+
+<table border="1">
+<tr><th>ID</th><th>Name</th><th>Email</th><th>Marks</th></tr>
+
+<?php
+while ($row = $result->fetch_assoc()) {
+    echo "<tr>
+        <td>{$row['id']}</td>
+        <td>{$row['name']}</td>
+        <td>{$row['email']}</td>
+        <td>{$row['marks']}</td>
+    </tr>";
+}
+?>
+
+</table>
+"@
+}
+
 default {
     Write-Host "Invalid choice" -ForegroundColor Red
     Start-Sleep -Seconds 1
@@ -270,7 +322,7 @@ default {
 }
 }
 
-# Clipboard with fallback
+# Clipboard
 if (Get-Command Set-Clipboard -ErrorAction SilentlyContinue) {
     $code | Set-Clipboard
     Write-Host ""
@@ -281,10 +333,7 @@ if (Get-Command Set-Clipboard -ErrorAction SilentlyContinue) {
     Write-Host $code
 }
 
-# Ask user to continue
 $again = Read-Host "`nDo you want another snippet? (y/n)"
 if ($again -ne "y") { break }
 
 }
-
-
