@@ -41,52 +41,72 @@ struct Node {
 
 struct Node* head = NULL;
 
-// Insert at beginning
-void insertBeg(int x){
+// Insert at position (1-based)
+void insertPos(int x, int pos){
     struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
     newNode->data = x;
-    newNode->next = head;
-    head = newNode;
-}
 
-// Insert at end
-void insertEnd(int x){
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->data = x;
-    newNode->next = NULL;
-
-    if(head == NULL){
+    if(pos == 1){
+        newNode->next = head;
         head = newNode;
         return;
     }
 
     struct Node* temp = head;
-    while(temp->next != NULL) temp = temp->next;
+    for(int i = 1; i < pos-1 && temp != NULL; i++){
+        temp = temp->next;
+    }
+
+    if(temp == NULL){
+        printf("Invalid Position\n");
+        return;
+    }
+
+    newNode->next = temp->next;
     temp->next = newNode;
 }
 
-// Delete from beginning
-void deleteBeg(){
-    if(head == NULL) return;
-    struct Node* temp = head;
-    head = head->next;
-    free(temp);
-}
+// Delete at position
+void deletePos(int pos){
+    if(head == NULL){
+        printf("List Empty\n");
+        return;
+    }
 
-// Delete from end
-void deleteEnd(){
-    if(head == NULL) return;
-
-    if(head->next == NULL){
-        free(head);
-        head = NULL;
+    if(pos == 1){
+        struct Node* temp = head;
+        head = head->next;
+        free(temp);
         return;
     }
 
     struct Node* temp = head;
-    while(temp->next->next != NULL) temp = temp->next;
-    free(temp->next);
-    temp->next = NULL;
+    for(int i = 1; i < pos-1 && temp->next != NULL; i++){
+        temp = temp->next;
+    }
+
+    if(temp->next == NULL){
+        printf("Invalid Position\n");
+        return;
+    }
+
+    struct Node* del = temp->next;
+    temp->next = del->next;
+    free(del);
+}
+
+// Reverse list
+void reverse(){
+    struct Node *prev = NULL, *curr = head, *next;
+
+    while(curr != NULL){
+        next = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = next;
+    }
+
+    head = prev;
 }
 
 // Display
@@ -100,13 +120,15 @@ void display(){
 }
 
 int main(){
-    insertBeg(10);
-    insertEnd(20);
-    insertEnd(30);
+    insertPos(10,1);
+    insertPos(20,2);
+    insertPos(15,2);
     display();
 
-    deleteBeg();
-    deleteEnd();
+    deletePos(2);
+    display();
+
+    reverse();
     display();
 
     return 0;
@@ -128,61 +150,89 @@ struct Node {
 
 struct Node* head = NULL;
 
-// Insert at beginning
-void insertBeg(int x){
+// Insert at position
+void insertPos(int x, int pos){
     struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
     newNode->data = x;
-    newNode->prev = NULL;
-    newNode->next = head;
 
-    if(head != NULL) head->prev = newNode;
-    head = newNode;
-}
-
-// Insert at end
-void insertEnd(int x){
-    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
-    newNode->data = x;
-    newNode->next = NULL;
-
-    if(head == NULL){
+    if(pos == 1){
         newNode->prev = NULL;
+        newNode->next = head;
+        if(head != NULL) head->prev = newNode;
         head = newNode;
         return;
     }
 
     struct Node* temp = head;
-    while(temp->next != NULL) temp = temp->next;
+    for(int i = 1; i < pos-1 && temp != NULL; i++){
+        temp = temp->next;
+    }
+
+    if(temp == NULL){
+        printf("Invalid Position\n");
+        return;
+    }
+
+    newNode->next = temp->next;
+    newNode->prev = temp;
+
+    if(temp->next != NULL)
+        temp->next->prev = newNode;
 
     temp->next = newNode;
-    newNode->prev = temp;
 }
 
-// Delete from beginning
-void deleteBeg(){
-    if(head == NULL) return;
+// Delete at position
+void deletePos(int pos){
+    if(head == NULL){
+        printf("List Empty\n");
+        return;
+    }
+
+    if(pos == 1){
+        struct Node* temp = head;
+        head = head->next;
+        if(head != NULL) head->prev = NULL;
+        free(temp);
+        return;
+    }
 
     struct Node* temp = head;
-    head = head->next;
+    for(int i = 1; i < pos && temp != NULL; i++){
+        temp = temp->next;
+    }
 
-    if(head != NULL) head->prev = NULL;
+    if(temp == NULL){
+        printf("Invalid Position\n");
+        return;
+    }
+
+    if(temp->prev != NULL)
+        temp->prev->next = temp->next;
+
+    if(temp->next != NULL)
+        temp->next->prev = temp->prev;
+
     free(temp);
 }
 
-// Delete from end
-void deleteEnd(){
-    if(head == NULL) return;
+// Reverse DLL
+void reverse(){
+    struct Node* temp = NULL;
+    struct Node* curr = head;
 
-    struct Node* temp = head;
-    while(temp->next != NULL) temp = temp->next;
+    while(curr != NULL){
+        temp = curr->prev;
+        curr->prev = curr->next;
+        curr->next = temp;
+        curr = curr->prev;
+    }
 
-    if(temp->prev != NULL) temp->prev->next = NULL;
-    else head = NULL;
-
-    free(temp);
+    if(temp != NULL)
+        head = temp->prev;
 }
 
-// Display forward
+// Display
 void display(){
     struct Node* temp = head;
     while(temp != NULL){
@@ -193,13 +243,15 @@ void display(){
 }
 
 int main(){
-    insertBeg(10);
-    insertEnd(20);
-    insertEnd(30);
+    insertPos(10,1);
+    insertPos(20,2);
+    insertPos(15,2);
     display();
 
-    deleteBeg();
-    deleteEnd();
+    deletePos(2);
+    display();
+
+    reverse();
     display();
 
     return 0;
