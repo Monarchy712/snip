@@ -1,699 +1,559 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+$snippets = [ordered]@{
+    "1" = @{
+        Title = "Class, Encapsulation and Data Abstraction"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class BankAccount {
+private:
+    double balance; // hidden implementation detail
+public:
+    BankAccount(double b) : balance(b) {}
+    void deposit(double amount) {
+        if (amount > 0) balance += amount;
+    }
+    double getBalance() const { return balance; }
+};
+
+int main() {
+    BankAccount account(100);
+    account.deposit(50);
+    cout << account.getBalance() << '\n';
+}
+'@
+    }
+    "2" = @{
+        Title = "Default, Parameterized and Destructor"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Demo {
+    int x;
+public:
+    Demo() : x(0) { cout << "Default constructor\n"; }
+    Demo(int a) : x(a) { cout << "Parameterized constructor\n"; }
+    ~Demo() { cout << "Destructor for " << x << '\n'; }
+    void show() const { cout << x << '\n'; }
+};
+
+int main() {
+    Demo a;
+    Demo b(10);
+    a.show();
+    b.show();
+}
+'@
+    }
+    "3" = @{
+        Title = "Copy Constructor"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Demo {
+    int x;
+public:
+    Demo(int a) : x(a) {}
+    Demo(const Demo& other) : x(other.x) {
+        cout << "Copy constructor called\n";
+    }
+    void show() const { cout << x << '\n'; }
+};
+
+int main() {
+    Demo a(10);
+    Demo b = a;
+    b.show();
+}
+'@
+    }
+    "4" = @{
+        Title = "Shallow Copy vs Deep Copy"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Box {
+public:
+    int* ptr;
+
+    Box(int value) : ptr(new int(value)) {}
+
+    // Deep copy: allocate separate memory and copy the value.
+    Box(const Box& other) : ptr(new int(*other.ptr)) {}
+
+    ~Box() { delete ptr; }
+};
+
+int main() {
+    Box a(10);
+    Box b = a;       // invokes deep-copy constructor
+    *b.ptr = 99;
+    cout << *a.ptr << '\n'; // 10
+    cout << *b.ptr << '\n'; // 99
+}
+'@
+    }
+    "5" = @{
+        Title = "Static and Non-Static Members"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Student {
+public:
+    static int count;
+    int roll;
+
+    Student(int r) : roll(r) { ++count; }
+    void show() const { cout << roll << '\n'; }
+    static void showCount() { cout << count << '\n'; }
+};
+
+int Student::count = 0;
+
+int main() {
+    Student a(1), b(2);
+    a.show();
+    Student::showCount();
+}
+'@
+    }
+    "6" = @{
+        Title = "Inheritance and Derived Class"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    int x;
+    Base(int a) : x(a) {}
+    void showBase() const { cout << x << '\n'; }
+};
+
+class Derived : public Base {
+public:
+    int y;
+    Derived(int a, int b) : Base(a), y(b) {}
+    void show() const { cout << x << " " << y << '\n'; }
+};
+
+int main() {
+    Derived d(10, 20);
+    d.showBase();
+    d.show();
+}
+'@
+    }
+    "7" = @{
+        Title = "Constructor Inheritance and Base Initializer"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    Base(int x) { cout << "Base: " << x << '\n'; }
+};
+
+class Derived : public Base {
+public:
+    using Base::Base; // inherit base constructors
+};
+
+class AnotherDerived : public Base {
+public:
+    AnotherDerived(int x) : Base(x) {}
+};
+
+int main() {
+    Derived a(10);
+    AnotherDerived b(20);
+}
+'@
+    }
+    "8" = @{
+        Title = "Compile-Time Polymorphism: Function Overloading"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Print {
+public:
+    void show(int x) { cout << "int: " << x << '\n'; }
+    void show(double x) { cout << "double: " << x << '\n'; }
+    void show(string x) { cout << "string: " << x << '\n'; }
+};
+
+int main() {
+    Print p;
+    p.show(10);
+    p.show(2.5);
+    p.show(string("hello"));
+}
+'@
+    }
+    "9" = @{
+        Title = "Runtime Polymorphism: Virtual and Override"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    virtual void show() { cout << "Base\n"; }
+    virtual ~Base() = default;
+};
+
+class Derived : public Base {
+public:
+    void show() override { cout << "Derived\n"; }
+};
+
+int main() {
+    Derived d;
+    Base& ref = d;
+    ref.show(); // Derived
+}
+'@
+    }
+    "10" = @{
+        Title = "Operator Overloading: + and this"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Number {
+    int value;
+public:
+    Number(int v = 0) : value(v) {}
+    Number operator+(const Number& other) const {
+        return Number(this->value + other.value);
+    }
+    void show() const { cout << value << '\n'; }
+};
+
+int main() {
+    Number a(10), b(20);
+    Number c = a + b;
+    c.show();
+}
+'@
+    }
+    "11" = @{
+        Title = "ostream Operator and Friend Function"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Point {
+    int x, y;
+public:
+    Point(int a, int b) : x(a), y(b) {}
+    friend ostream& operator<<(ostream& out, const Point& p);
+};
+
+ostream& operator<<(ostream& out, const Point& p) {
+    out << '(' << p.x << ", " << p.y << ')';
+    return out;
+}
+
+int main() {
+    Point p(2, 3);
+    cout << p << '\n';
+}
+'@
+    }
+    "12" = @{
+        Title = "Friend Class"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class A {
+    int secret = 42;
+    friend class B;
+};
+
+class B {
+public:
+    void reveal(const A& obj) {
+        cout << obj.secret << '\n';
+    }
+};
+
+int main() {
+    A a;
+    B b;
+    b.reveal(a);
+}
+'@
+    }
+    "13" = @{
+        Title = "Dynamic Allocation and Destructor"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Array {
+    int* data;
+    int size;
+public:
+    Array(int n) : data(new int[n]{}), size(n) {}
+    ~Array() { delete[] data; }
+    void set(int i, int value) {
+        if (i >= 0 && i < size) data[i] = value;
+    }
+    void print() const {
+        for (int i = 0; i < size; ++i) cout << data[i] << ' ';
+        cout << '\n';
+    }
+};
+
+int main() {
+    Array a(3);
+    a.set(0, 10);
+    a.set(1, 20);
+    a.print();
+}
+'@
+    }
+    "14" = @{
+        Title = "Assignment Operator Overloading"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Buffer {
+    int* ptr;
+public:
+    Buffer(int v = 0) : ptr(new int(v)) {}
+    Buffer(const Buffer& other) : ptr(new int(*other.ptr)) {}
+
+    Buffer& operator=(const Buffer& other) {
+        if (this != &other) {
+            int* fresh = new int(*other.ptr);
+            delete ptr;
+            ptr = fresh;
+        }
+        return *this;
+    }
+
+    ~Buffer() { delete ptr; }
+    int get() const { return *ptr; }
+};
+
+int main() {
+    Buffer a(10), b(20);
+    b = a;
+    cout << b.get() << '\n';
+}
+'@
+    }
+    "15" = @{
+        Title = "Inheritance Types: Single, Multilevel, Multiple"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class A { public: void a() { cout << "A\n"; } };
+class B : public A { public: void b() { cout << "B\n"; } }; // single
+class C : public B { public: void c() { cout << "C\n"; } }; // multilevel
+class X { public: void x() { cout << "X\n"; } };
+class Y { public: void y() { cout << "Y\n"; } };
+class Z : public X, public Y {}; // multiple
+
+int main() {
+    C obj;
+    obj.a(); obj.b(); obj.c();
+    Z z;
+    z.x(); z.y();
+}
+'@
+    }
+    "16" = @{
+        Title = "Diamond Problem and Virtual Base Class"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Person {
+public:
+    int id;
+    Person() : id(1) {}
+};
+
+class Student : virtual public Person {};
+class Employee : virtual public Person {};
+class TA : public Student, public Employee {};
+
+int main() {
+    TA t;
+    t.id = 25; // one shared Person base subobject
+    cout << t.id << '\n';
+}
+'@
+    }
+    "17" = @{
+        Title = "Pure Virtual Function and Abstract Class"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Shape {
+public:
+    virtual double area() const = 0; // pure virtual
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+    double r;
+public:
+    Circle(double radius) : r(radius) {}
+    double area() const override { return 3.14159 * r * r; }
+};
+
+int main() {
+    Circle c(2);
+    cout << c.area() << '\n';
+    // Shape s; // invalid: abstract class
+}
+'@
+    }
+    "18" = @{
+        Title = "Function Overriding without Virtual"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Base {
+public:
+    void show() { cout << "Base\n"; }
+};
+
+class Derived : public Base {
+public:
+    void show() { cout << "Derived\n"; }
+};
+
+int main() {
+    Derived d;
+    d.show(); // Derived
+    Base* p = &d;
+    p->show(); // Base: non-virtual, static binding
+}
+'@
+    }
+    "19" = @{
+        Title = "Friend Function"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Box {
+    int width;
+public:
+    Box(int w) : width(w) {}
+    friend void printWidth(const Box& b);
+};
+
+void printWidth(const Box& b) {
+    cout << b.width << '\n';
+}
+
+int main() {
+    Box b(15);
+    printWidth(b);
+}
+'@
+    }
+    "20" = @{
+        Title = "Quick Combined OOP Demo"
+        Code = @'
+#include <iostream>
+using namespace std;
+
+class Base {
+protected:
+    int value;
+public:
+    Base(int v) : value(v) {}
+    virtual void display() const { cout << "Base " << value << '\n'; }
+    virtual ~Base() = default;
+    friend class Inspector;
+};
+
+class Derived : public Base {
+public:
+    using Base::Base;
+    void display() const override { cout << "Derived " << value << '\n'; }
+    Derived operator+(const Derived& rhs) const {
+        return Derived(value + rhs.value);
+    }
+    friend ostream& operator<<(ostream& out, const Derived& d) {
+        return out << d.value;
+    }
+};
+
+class Inspector {
+public:
+    void inspect(const Base& b) { cout << "Inspector sees " << b.value << '\n'; }
+};
+
+int main() {
+    Derived a(10), b(20);
+    Derived c = a + b;
+    cout << "Sum: " << c << '\n';
+    Base* p = &c;
+    p->display();
+    Inspector i;
+    i.inspect(c);
+}
+'@
+    }
+}
+
 while ($true) {
-
-Clear-Host
-
-Write-Host ""
-Write-Host "  +============================================+" -ForegroundColor Cyan
-Write-Host "  |        DSA Snippet Picker (Exam Mode)       |" -ForegroundColor Cyan
-Write-Host "  +============================================+" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "   [1] Linked List - Polynomial Addition"
-Write-Host "   [2] Addition of Two Big Numbers (Linked List)"
-Write-Host "   [3] Radix Sort"
-Write-Host "   [4] Sparse Matrix (Multi-linked List)"
-Write-Host "   [5] Heap Sort (Min Heap + Max Heap Heapify)"
-Write-Host "   [6] AVL Tree - Insertion"
-Write-Host ""
-
-$code = $null
-$choice = Read-Host "  Enter choice"
-
-switch ($choice) {
-
-# ================= LINKED LIST - POLYNOMIAL ADDITION =================
-"1" {
-$code = @'
-#include<stdio.h>
-#include<stdlib.h>
-#include<ctype.h>
-
-struct node{
-    int coeff;
-    int exp;
-    struct node * next;
-};
-
-struct node* createNode(int coeff, int exp){
-    struct node* n = (struct node*) malloc(sizeof(struct node));
-    n->coeff = coeff;
-    n->exp = exp;
-    n->next = NULL;
-    return n;
-}
-
-// inserts at the end, keeps the list in the order of insertion
-void insertEnd(struct node** head, struct node** tail, int coeff, int exp){
-    struct node* temp = createNode(coeff, exp);
-
-    if(*head==NULL){
-        *head = temp;
-        *tail = temp;
-        return ;
-    }
-    (*tail)->next = temp;
-    *tail = temp;
-}
-
-// both polynomials are stored in decreasing order of exponent
-struct node* add(struct node* head1, struct node* head2){
-    struct node* head = NULL;
-    struct node* tail = NULL;
-    while(head1!=NULL && head2!=NULL){
-        if(head1->exp == head2->exp){
-            insertEnd(&head, &tail, head1->coeff + head2->coeff, head1->exp);
-            head1 = head1->next;
-            head2 = head2->next;
-        }
-        else if(head1->exp > head2->exp){
-            insertEnd(&head, &tail, head1->coeff, head1->exp);
-            head1 = head1->next;
-        }
-        else{
-            insertEnd(&head, &tail, head2->coeff, head2->exp);
-            head2 = head2->next;
-        }
-    }
-    while(head1!=NULL){
-        insertEnd(&head, &tail, head1->coeff, head1->exp);
-        head1 = head1->next;
-    }
-    while(head2!=NULL){
-        insertEnd(&head, &tail, head2->coeff, head2->exp);
-        head2 = head2->next;
-    }
-
-    return head;
-}
-
-void printList(struct node* head){
-    int first = 1;
-    while(head!=NULL){
-        if(head->coeff != 0){
-            if(head->coeff >= 0)
-                printf(first ? "%dx^%d" : " + %dx^%d", head->coeff, head->exp);
-            else
-                printf(first ? "-%dx^%d" : " - %dx^%d", -head->coeff, head->exp);
-            first = 0;
-        }
-        head = head->next;
-    }
-    if(first) printf("0");
-    printf("\n");
-}
-
-// parses strings like 3x^4+2x-5 (terms must be in decreasing order of exponent)
-struct node* parsePolynomial(char poly[]){
-    struct node* head = NULL;
-    struct node* tail = NULL;
-    int i = 0;
-
-    while(poly[i] != '\0'){
-        int sign = 1;
-        if(poly[i] == '+'){
-            sign = 1;
-            i++;
-        }
-        else if(poly[i] == '-'){
-            sign = -1;
-            i++;
-        }
-
-        int coeff = 0;
-        int coeffPresent = 0;
-
-        while(isdigit(poly[i])){
-            coeff = coeff * 10 + (poly[i] - '0');
-            coeffPresent = 1;
-            i++;
-        }
-
-        int exp = 0;
-
-        if(poly[i] == 'x'){
-            if(!coeffPresent)
-                coeff = 1;
-
-            i++;
-
-            if(poly[i] == '^'){
-                i++;
-                while(isdigit(poly[i])){
-                    exp = exp * 10 + (poly[i] - '0');
-                    i++;
-                }
-            }
-            else{
-                exp = 1;
-            }
-        }
-
-        insertEnd(&head, &tail, sign * coeff, exp);
-    }
-
-    return head;
-}
-
-int main(){
-    char poly1[200];
-    char poly2[200];
-    scanf("%s %s", poly1, poly2);
-
-    struct node *head1 = parsePolynomial(poly1);
-    struct node *head2 = parsePolynomial(poly2);
-
-    struct node *head = add(head1, head2);
-    printf("Sum : ");
-    printList(head);
-
-    return 0;
-}
-'@
-}
-
-# ================= ADDITION OF TWO BIG NUMBERS (LINKED LIST) =================
-"2" {
-$code = @'
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-
-struct node{
-    int digit;
-    struct node * next;
-};
-
-struct node* createNode(int digit){
-    struct node* n = (struct node*) malloc(sizeof(struct node));
-    n->digit = digit;
-    n->next = NULL;
-    return n;
-}
-
-// inserts at the front, so the number string ends up reversed
-void insert(struct node** head, int digit){
-    struct node* temp = createNode(digit);
-    temp->next = *head;
-    *head = temp;
-}
-
-void insertEnd(struct node** head, struct node** tail, int digit){
-    struct node* temp = createNode(digit);
-
-    if(*head==NULL){
-        *head = temp;
-        *tail = temp;
-        return ;
-    }
-    (*tail)->next = temp;
-    *tail = temp;
-}
-
-// least significant digit is at the head of the list
-struct node* parseNumber(char num[]){
-    struct node* head = NULL;
-    for(int i = 0; num[i] != '\0'; i++){
-        insert(&head, num[i] - '0');
-    }
-    return head;
-}
-
-struct node* add(struct node* head1, struct node* head2){
-    struct node* head = NULL;
-    struct node* tail = NULL;
-    int carry = 0;
-
-    while(head1!=NULL || head2!=NULL || carry){
-        int sum = carry;
-        if(head1!=NULL){
-            sum += head1->digit;
-            head1 = head1->next;
-        }
-        if(head2!=NULL){
-            sum += head2->digit;
-            head2 = head2->next;
-        }
-        insertEnd(&head, &tail, sum % 10);
-        carry = sum / 10;
-    }
-
-    return head;
-}
-
-// prints from the most significant digit
-void printList(struct node* head){
-    if(head==NULL) return ;
-    printList(head->next);
-    printf("%d", head->digit);
-}
-
-int main(){
-    char num1[1000];
-    char num2[1000];
-    scanf("%s %s", num1, num2);
-
-    struct node *head1 = parseNumber(num1);
-    struct node *head2 = parseNumber(num2);
-
-    struct node *head = add(head1, head2);
-    printf("Sum : ");
-    printList(head);
-    printf("\n");
-
-    return 0;
-}
-'@
-}
-
-# ================= RADIX SORT =================
-"3" {
-$code = @'
-#include<bits/stdc++.h>
-using namespace std;
-
-void radixSort(int arr[], int n);
-
-int findMax(int arr[], int n);
-
-void countSort(int arr[], int n, int exp);
-
-int main(){
-    int arr[] = {170, 45, 75, 90, 802, 24, 2, 66, 0, 1000};
-    int n = sizeof(arr) / sizeof(arr[0]);
-
-    cout<<"Original array : ";
-    for(int i = 0; i<n;i++) cout<<arr[i]<<" ";
-    cout<<endl;
-
-    radixSort(arr,n);
-    cout<<"Sorted array   : ";
-    for(int i = 0; i<n;i++) cout<<arr[i]<<" ";
-
-    return 0;
-}
-
-void radixSort(int arr[], int n){
-    int max = findMax(arr, n);
-    for (int exp = 1; max/exp>0; exp *=10) countSort(arr, n, exp);
-}
-
-int findMax(int arr[], int n){
-    int max = arr[0];
-    for(int i = 1; i<n;i++){
-        if(arr[i]>max){
-            max = arr[i];
-        }
-    }
-    return max;
-}
-
-void countSort(int arr[], int n, int exp){
-    int output[n];
-    int count[10] = {0};
-
-    for(int i =0; i<n;i++) count[(arr[i]/exp)%10]++;
-
-    for(int i =1; i<10; i++) count[i] += count[i-1];
-
-    for(int i = n-1; i>=0;  i--)
-        output[--count[(arr[i]/exp)%10]] = arr[i];
-
-    for(int i =0; i<n;i++) arr[i] = output[i];
-}
-'@
-}
-
-# ================= SPARSE MATRIX (MULTI-LINKED LIST) =================
-"4" {
-$code = @'
-#include<bits/stdc++.h>
-using namespace std;
-
-// every non-zero element is linked to the next one in its row (right)
-// and to the next one in its column (down)
-struct Node {
-    int row;
-    int col;
-    int val;
-    struct Node* right;
-    struct Node* down;
-};
-
-struct Sparse {
-    int rows;
-    int cols;
-    Node** rowHead;
-    Node** colHead;
-};
-
-Sparse* createSparse(int rows, int cols);
-
-void insert(Sparse* m, int row, int col, int val);
-
-void display(Sparse* m);
-
-void displayTriplets(Sparse* m);
-
-int main(){
-    int rows = 4, cols = 5;
-    Sparse* m = createSparse(rows, cols);
-
-    insert(m, 0, 2, 3);
-    insert(m, 0, 4, 7);
-    insert(m, 1, 0, 5);
-    insert(m, 2, 3, 2);
-    insert(m, 3, 1, 9);
-    insert(m, 0, 0, 1);
-
-    cout<<"Matrix :"<<endl;
-    display(m);
-
-    cout<<"Row Col Val"<<endl;
-    displayTriplets(m);
-
-    return 0;
-}
-
-Sparse* createSparse(int rows, int cols){
-    Sparse* m = new Sparse();
-    m->rows = rows;
-    m->cols = cols;
-    m->rowHead = new Node*[rows]();
-    m->colHead = new Node*[cols]();
-    return m;
-}
-
-void insert(Sparse* m, int row, int col, int val){
-    if(val == 0) return;
-
-    Node* n = new Node();
-    n->row = row;
-    n->col = col;
-    n->val = val;
-    n->right = nullptr;
-    n->down = nullptr;
-
-    // link into the row list, sorted by column
-    if(m->rowHead[row] == nullptr || m->rowHead[row]->col > col){
-        n->right = m->rowHead[row];
-        m->rowHead[row] = n;
-    }
-    else{
-        Node* cur = m->rowHead[row];
-        while(cur->right != nullptr && cur->right->col < col) cur = cur->right;
-        n->right = cur->right;
-        cur->right = n;
-    }
-
-    // link into the column list, sorted by row
-    if(m->colHead[col] == nullptr || m->colHead[col]->row > row){
-        n->down = m->colHead[col];
-        m->colHead[col] = n;
-    }
-    else{
-        Node* cur = m->colHead[col];
-        while(cur->down != nullptr && cur->down->row < row) cur = cur->down;
-        n->down = cur->down;
-        cur->down = n;
-    }
-}
-
-void display(Sparse* m){
-    for(int i = 0; i<m->rows;i++){
-        Node* cur = m->rowHead[i];
-        for(int j = 0; j<m->cols;j++){
-            if(cur != nullptr && cur->col == j){
-                cout<<cur->val<<" ";
-                cur = cur->right;
-            }
-            else cout<<"0 ";
-        }
-        cout<<endl;
-    }
-}
-
-void displayTriplets(Sparse* m){
-    for(int i = 0; i<m->rows;i++){
-        Node* cur = m->rowHead[i];
-        while(cur != nullptr){
-            cout<<cur->row<<"   "<<cur->col<<"   "<<cur->val<<endl;
-            cur = cur->right;
-        }
-    }
-}
-'@
-}
-
-# ================= HEAP SORT (MIN HEAP + MAX HEAP HEAPIFY) =================
-"5" {
-$code = @'
-#include<bits/stdc++.h>
-using namespace std;
-
-void maxHeapify(int arr[], int n, int i);
-
-void minHeapify(int arr[], int n, int i);
-
-void heapSortMax(int arr[], int n);
-
-void heapSortMin(int arr[], int n);
-
-void printArray(int arr[], int n);
-
-int main(){
-    int arr1[] = {12, 11, 13, 5, 6, 7, 20, 1};
-    int n = sizeof(arr1) / sizeof(arr1[0]);
-    int arr2[n];
-    for(int i = 0; i<n;i++) arr2[i] = arr1[i];
-
-    cout<<"Original array            : ";
-    printArray(arr1, n);
-
-    heapSortMax(arr1, n);
-    cout<<"Max Heap sort (ascending) : ";
-    printArray(arr1, n);
-
-    heapSortMin(arr2, n);
-    cout<<"Min Heap sort (descending): ";
-    printArray(arr2, n);
-
-    return 0;
-}
-
-// sinks arr[i] down so the subtree rooted at i is a max heap
-void maxHeapify(int arr[], int n, int i){
-    int largest = i;
-    int left = 2*i + 1;
-    int right = 2*i + 2;
-
-    if(left < n && arr[left] > arr[largest]) largest = left;
-    if(right < n && arr[right] > arr[largest]) largest = right;
-
-    if(largest != i){
-        swap(arr[i], arr[largest]);
-        maxHeapify(arr, n, largest);
-    }
-}
-
-// sinks arr[i] down so the subtree rooted at i is a min heap
-void minHeapify(int arr[], int n, int i){
-    int smallest = i;
-    int left = 2*i + 1;
-    int right = 2*i + 2;
-
-    if(left < n && arr[left] < arr[smallest]) smallest = left;
-    if(right < n && arr[right] < arr[smallest]) smallest = right;
-
-    if(smallest != i){
-        swap(arr[i], arr[smallest]);
-        minHeapify(arr, n, smallest);
-    }
-}
-
-void heapSortMax(int arr[], int n){
-    for(int i = n/2 - 1; i>=0; i--) maxHeapify(arr, n, i);
-
-    for(int i = n-1; i>0; i--){
-        swap(arr[0], arr[i]);
-        maxHeapify(arr, i, 0);
-    }
-}
-
-void heapSortMin(int arr[], int n){
-    for(int i = n/2 - 1; i>=0; i--) minHeapify(arr, n, i);
-
-    for(int i = n-1; i>0; i--){
-        swap(arr[0], arr[i]);
-        minHeapify(arr, i, 0);
-    }
-}
-
-void printArray(int arr[], int n){
-    for(int i = 0; i<n;i++) cout<<arr[i]<<" ";
-    cout<<endl;
-}
-'@
-}
-
-# ================= AVL TREE - INSERTION =================
-"6" {
-$code = @'
-#include<bits/stdc++.h>
-using namespace std;
-
-struct Node {
-    int data;
-    int height;
-    struct Node* left;
-    struct Node* right;
-};
-
-Node* createNode(int val);
-
-int height(Node* n);
-
-int balanceFactor(Node* n);
-
-Node* rotateRight(Node* y);
-
-Node* rotateLeft(Node* x);
-
-Node* insert(Node* root, int val);
-
-void inorder(Node* root);
-
-void preorder(Node* root);
-
-int main(){
-    int values[] = {10, 20, 30, 40, 50, 25};
-    int n = sizeof(values) / sizeof(values[0]);
-
-    Node* root = nullptr;
-    for(int i = 0; i<n;i++) root = insert(root, values[i]);
-
-    cout<<"Inorder   : ";
-    inorder(root);
-    cout<<endl;
-
-    cout<<"Preorder  : ";
-    preorder(root);
-    cout<<endl;
-
-    return 0;
-}
-
-Node* createNode(int val){
-    Node* n = new Node();
-    n->data = val;
-    n->height = 1;
-    n->left = nullptr;
-    n->right = nullptr;
-    return n;
-}
-
-int height(Node* n){
-    return n == nullptr ? 0 : n->height;
-}
-
-int balanceFactor(Node* n){
-    return n == nullptr ? 0 : height(n->left) - height(n->right);
-}
-
-Node* rotateRight(Node* y){
-    Node* x = y->left;
-    Node* t = x->right;
-
-    x->right = y;
-    y->left = t;
-
-    y->height = 1 + max(height(y->left), height(y->right));
-    x->height = 1 + max(height(x->left), height(x->right));
-    return x;
-}
-
-Node* rotateLeft(Node* x){
-    Node* y = x->right;
-    Node* t = y->left;
-
-    y->left = x;
-    x->right = t;
-
-    x->height = 1 + max(height(x->left), height(x->right));
-    y->height = 1 + max(height(y->left), height(y->right));
-    return y;
-}
-
-Node* insert(Node* root, int val){
-    if(root == nullptr) return createNode(val);
-
-    if(val < root->data) root->left = insert(root->left, val);
-    else if(val > root->data) root->right = insert(root->right, val);
-    else return root;
-
-    root->height = 1 + max(height(root->left), height(root->right));
-
-    int bf = balanceFactor(root);
-
-    // left left
-    if(bf > 1 && val < root->left->data) return rotateRight(root);
-
-    // right right
-    if(bf < -1 && val > root->right->data) return rotateLeft(root);
-
-    // left right
-    if(bf > 1 && val > root->left->data){
-        root->left = rotateLeft(root->left);
-        return rotateRight(root);
-    }
-
-    // right left
-    if(bf < -1 && val < root->right->data){
-        root->right = rotateRight(root->right);
-        return rotateLeft(root);
-    }
-
-    return root;
-}
-
-void inorder(Node* root){
-    if(root == nullptr) return ;
-    inorder(root->left);
-    cout<<root->data<<" ";
-    inorder(root->right);
-}
-
-void preorder(Node* root){
-    if(root == nullptr) return ;
-    cout<<root->data<<" ";
-    preorder(root->left);
-    preorder(root->right);
-}
-'@
-}
-
-default {
-    Write-Host "Invalid choice" -ForegroundColor Red
-}
-}
-
-if ($null -eq $code) {
-    Start-Sleep -Seconds 1
-    continue
-}
-
-# Clipboard logic
-if (Get-Command Set-Clipboard -ErrorAction SilentlyContinue) {
-    $code | Set-Clipboard
+    Clear-Host
     Write-Host ""
-    Write-Host "  OK copied to clipboard!" -ForegroundColor Green
-} else {
+    Write-Host "  +======================================================+" -ForegroundColor Cyan
+    Write-Host "  |          IOOP CSLP02 Snippet Picker (Exam Mode)      |" -ForegroundColor Cyan
+    Write-Host "  +======================================================+" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Clipboard not supported. Showing code below:" -ForegroundColor Yellow
-    Write-Host $code
-}
 
-$again = Read-Host "`nDo you want another snippet? (y/n)"
-if ($again -ne "y") { break }
+    foreach ($key in $snippets.Keys) {
+        $title = $snippets[$key].Title
+        Write-Host ("  [{0,2}] {1}" -f $key, $title)
+    }
 
+    Write-Host ""
+    Write-Host "  [Q] Quit"
+    $choice = (Read-Host "`n  Enter choice").Trim().ToUpper()
+
+    if ($choice -eq "Q") { break }
+
+    if (-not $snippets.Contains($choice)) {
+        Write-Host "`n  Invalid choice." -ForegroundColor Red
+        Start-Sleep -Seconds 1
+        continue
+    }
+
+    $code = $snippets[$choice].Code
+
+    if (Get-Command Set-Clipboard -ErrorAction SilentlyContinue) {
+        $code | Set-Clipboard
+        Write-Host "`n  OK: $($snippets[$choice].Title)" -ForegroundColor Green
+        Write-Host "  Code copied to clipboard. Paste into your IDE."
+    } else {
+        Write-Host "`n  Clipboard command unavailable. Code follows:" -ForegroundColor Yellow
+        Write-Host $code
+    }
+
+    $again = Read-Host "`n  Press Enter to return to menu, or type Q to quit"
+    if ($again.Trim().ToUpper() -eq "Q") { break }
 }
